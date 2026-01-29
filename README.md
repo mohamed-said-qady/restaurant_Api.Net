@@ -1,35 +1,38 @@
-# Restaurant Management System - Backend API 🍽️
+# Restaurant Management System - Backend API 
 
 Backend RESTful API for a restaurant management system built with **ASP.NET Core**.  
-The project focuses on **clean architecture**, **business logic separation**, and **secure authentication & authorization** using **JWT, Roles, and Permissions**.
+The project focuses on **clean architecture**,
+**business logic separation**, 
+and **secure authentication & authorization** using **JWT,
+Roles, and Permissions**.
 
 ---
 
-## 🚀 Features
+## Features
 
-### 🔐 Authentication & Authorization
+###  Authentication & Authorization
 - JWT Authentication
 - Role-based Authorization (Admin, Chef, Cashier)
 - Permission-based access control (Claims)
 - Secure Login flow
 
-### 📦 Orders Management
+###  Orders Management
 - Create orders with multiple order items
 - Validate inventory before order creation
 - Automatic total price calculation
 - Transaction handling (Commit / Rollback)
 - Order linked to the authenticated user
 
-### 🏪 Inventory Management
+###  Inventory Management
 - Track inventory per menu item
 - Restock inventory
 - Prevent orders if stock is insufficient
 
-### 🍔 Menu Items
+###  Menu Items
 - Manage restaurant menu items
 - Inventory linked to menu items
 
-### 🧠 Clean Architecture
+###  Clean Architecture
 - Controllers (Thin)
 - Services (Business Logic)
 - Repositories (Data Access)
@@ -38,7 +41,7 @@ The project focuses on **clean architecture**, **business logic separation**, an
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **ASP.NET Core Web API**
 - **Entity Framework Core**
@@ -52,4 +55,4 @@ The project focuses on **clean architecture**, **business logic separation**, an
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
