@@ -92,7 +92,6 @@ namespace restaurant.Services
             var order = await _orderRepo.GetByIdAsync(id);
             if (order == null) return null;
 
-            // عدّل اللي مسموح يتعدل بس
             order.Status = dto.Status;
 
             await _orderRepo.UpdateAsync(order);
