@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,15 +15,12 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -------------------------
-// 1️⃣ Add DbContext
-// -------------------------
+//  Database
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// -------------------------
-// 2️⃣ Add Identity
-// -------------------------
+//  Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 {
     options.Password.RequireDigit = false;
@@ -34,11 +31,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-// -------------------------
-// 3️⃣ Add JWT Authentication
-// -------------------------
-var key = Encoding.UTF8.GetBytes("SUPER_SECRET_KEY");
+//  JWT Settings from appsettings.json
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSettings["Key"];
 
+//  JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -46,26 +43,27 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key)
+
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(secretKey)
+        )
     };
 });
 
-// -------------------------
-// 4️⃣ Add Repositories
-// -------------------------
+//  Repositories
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IMenuItemRepository, MenuItemRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
-// -------------------------
-// 5️⃣ Add Services
-// -------------------------
+//  Services
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IMenuItemService, MenuItemService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
@@ -75,34 +73,25 @@ builder.Services.AddScoped<IRolePermissionService, RolePermissionService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 
-
-// -------------------------
-// 6️⃣ Add Controllers
-// -------------------------
+//  Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// -------------------------
-// 7️⃣ Build app
-// -------------------------
+//  Build App
 var app = builder.Build();
 
-// -------------------------
-// 8️⃣ Middleware
-// -------------------------
+//  Middleware
 app.UseGlobalExceptionMiddleware();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();  // 👈 لازم قبل Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// -------------------------
-// 9️⃣ Run
-// -------------------------
 app.Run();
