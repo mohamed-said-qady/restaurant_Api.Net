@@ -96,5 +96,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var userSeeder = services.GetRequiredService<UserSeeder>();
+    await userSeeder.AddUserSeeder();
+
+    var permissionSeeder = services.GetRequiredService<PermissionSeeder>();
+    await permissionSeeder.SeedAsync();
+
+    var rolePermissionSeeder = services.GetRequiredService<RolePermissionSeeder>();
+    await rolePermissionSeeder.SeedAsync();
+}
 
 app.Run();
