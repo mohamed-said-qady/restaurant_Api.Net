@@ -72,6 +72,9 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRolePermissionService, RolePermissionService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<UserSeeder>();
+builder.Services.AddScoped<PermissionSeeder>();
+builder.Services.AddScoped<PermissionSeeder>();
 
 //  Controllers & Swagger
 builder.Services.AddControllers();
