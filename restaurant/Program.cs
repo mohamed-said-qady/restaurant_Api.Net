@@ -74,7 +74,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<UserSeeder>();
 builder.Services.AddScoped<PermissionSeeder>();
-builder.Services.AddScoped<PermissionSeeder>();
+builder.Services.AddScoped<RolePermissionSeeder>();
 
 //  Controllers & Swagger
 builder.Services.AddControllers();
