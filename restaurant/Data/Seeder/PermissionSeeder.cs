@@ -38,12 +38,22 @@ namespace restaurant.Data.Seeder
 
         private async Task AddPermissionToRole(string roleName, string permissionCode)
         {
+<<<<<<< HEAD
             //var role = await _Roles.FindByNameAsync(roleName);
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+=======
+            //  هات الـ Role
+            var role = await _context.Roles
+                .FirstOrDefaultAsync(r => r.Name == roleName);
+>>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
 
             if (role == null)
                 return;
 
+<<<<<<< HEAD
+=======
+            //  هات أو أنشئ Permission
+>>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
             var permission = await _context.Permissions
                 .FirstOrDefaultAsync(p => p.Code == permissionCode);
 
@@ -58,6 +68,10 @@ namespace restaurant.Data.Seeder
                 await _context.SaveChangesAsync();
             }
 
+<<<<<<< HEAD
+=======
+            // تأكد إن الربط مش موجود قبل كدا
+>>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
             var exists = await _context.RolePermissions.AnyAsync(rp =>
                 rp.RoleId == role.Id &&
                 rp.PermissionId == permission.Id
@@ -66,6 +80,10 @@ namespace restaurant.Data.Seeder
             if (exists)
                 return;
 
+<<<<<<< HEAD
+=======
+            //  اعمل الربط
+>>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
             _context.RolePermissions.Add(new RolePermission
             {
                 RoleId = role.Id,
