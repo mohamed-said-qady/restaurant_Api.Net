@@ -1,6 +1,6 @@
 ﻿namespace restaurant.Dtos
 {
-    // يمثل عنصر واحد داخل الطلب
+               //       يمثل عنصر واحد داخل الطل
     public class OrderItemCreateDto
     {
         public int MenuItemId { get; set; }   // معرف العنصر

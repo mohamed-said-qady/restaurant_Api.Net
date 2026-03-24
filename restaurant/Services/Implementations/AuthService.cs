@@ -5,6 +5,7 @@ using restaurant.Model;
 using restaurant.Services.Interfaces;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace restaurant.Services.Implementations
 {
@@ -25,13 +26,15 @@ namespace restaurant.Services.Implementations
             _rolePermissionService = rolePermissionService;
         }
 
+
         public async Task<string> LoginAsync(string username, string password)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null) return null;
+            var user = await _userManager.FindByEmailAsync(username);
+            if (user == null)
+                return BadRequest("user not found");
 
             if (!await _userManager.CheckPasswordAsync(user, password))
-                return null;
+                return BadRequest("password error");
 
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault();
@@ -40,6 +43,11 @@ namespace restaurant.Services.Implementations
             var permissions = await _rolePermissionService.GetPermissionsByRoleAsync(role);
 
             return _jwtService.GenerateToken(user, role, permissions);
+        }
+
+        private string BadRequest(string v)
+        {
+            throw new Exception();
         }
     }
 }

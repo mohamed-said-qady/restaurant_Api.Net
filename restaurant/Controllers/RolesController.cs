@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using restaurant.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
+using restaurant.Authorization;
 
 namespace restaurant.Controllers
 {
@@ -18,6 +19,7 @@ namespace restaurant.Controllers
         }
 
         [HttpGet("{id}")]
+        [Permission("show-order")]
         public async Task<IActionResult> Get(Guid id)
         {
             var role = await _roleService.GetByIdAsync(id);

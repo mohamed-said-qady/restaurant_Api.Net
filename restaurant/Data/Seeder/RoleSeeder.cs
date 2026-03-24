@@ -3,7 +3,7 @@ using restaurant.Authorization;
 using System;
 using System.Threading.Tasks;
 
-namespace restaurant.Data.Seeders
+namespace restaurant.Data.Seeder
 {
     public class RoleSeeder
     {

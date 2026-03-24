@@ -21,6 +21,8 @@ namespace restaurant.Data
         public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
 
 
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -37,18 +39,18 @@ namespace restaurant.Data
                 .HasOne(rp => rp.Permission)
                 .WithMany()
                 .HasForeignKey(rp => rp.PermissionId);
-            // =========================
-            // Order ↔ ApplicationUser (One To Many)
-            // =========================
+           
+            // Order  ApplicationUser (One To Many)
+           
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.User)
-                .WithMany() // لو حابب تضيف ICollection<Order> في ApplicationUser خليها WithMany(u => u.Orders)
+                .WithMany() 
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // =========================
-            // Order ↔ OrderDetail (One To Many)
-            // =========================
+         
+            // Order  OrderDetail (One To Many)
+           
             modelBuilder.Entity<OrderDetail>()
                 .HasOne<Order>()
                 .WithMany(o => o.Details)
@@ -64,9 +66,9 @@ namespace restaurant.Data
                 .HasForeignKey(od => od.MenuItemId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // =========================
-            // MenuItem ↔ InventoryItem (One To One)
-            // =========================
+          
+            // MenuItem  InventoryItem (One To One)
+          
             modelBuilder.Entity<InventoryItem>()
                 .HasOne(i => i.MenuItem)
                 .WithOne()

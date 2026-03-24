@@ -3,7 +3,7 @@ using restaurant.Authorization;
 using restaurant.Model;
 using System.Threading.Tasks;
 
-namespace restaurant.Data.Seeders
+namespace restaurant.Data.Seeder
 {
     public class UserSeeder
     {
@@ -29,26 +29,54 @@ namespace restaurant.Data.Seeders
             );
         }
 
+        //private async Task CreateUserIfNotExists(
+        //    string email,
+        //    string password,
+        //    string role)
+        //{
+        //    var user = await _userManager.FindByEmailAsync(email);
+        //    if (user != null)
+        //        return;
+
+        //    var newUser = new ApplicationUser
+        //    {
+        //        UserName = email,
+        //        Email = email,
+        //    };
+
+        //    var result = await _userManager.CreateAsync(newUser, password);
+
+        //    if (result.Succeeded)
+        //    {
+        //        await _userManager.AddToRoleAsync(newUser, role);
+        //    }
+        //}
         private async Task CreateUserIfNotExists(
             string email,
             string password,
             string role)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user != null)
-                return;
 
-            var newUser = new ApplicationUser
+            if (user == null)
             {
-                UserName = email,
-                Email = email
-            };
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true
+                };
 
-            var result = await _userManager.CreateAsync(newUser, password);
+                var result = await _userManager.CreateAsync(user, password);
 
-            if (result.Succeeded)
+                if (!result.Succeeded)
+                    return;
+            }
+
+            // 
+            if (!await _userManager.IsInRoleAsync(user, role))
             {
-                await _userManager.AddToRoleAsync(newUser, role);
+                await _userManager.AddToRoleAsync(user, role);
             }
         }
     }

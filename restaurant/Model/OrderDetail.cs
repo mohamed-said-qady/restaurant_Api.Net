@@ -11,6 +11,6 @@
         public MenuItem? MenuItem { get; set; } // Navigation property (optional)
 
         public int Quantity { get; set; }
-        public decimal Price { get; set; } // ✅ سعر وقت الطلب
+        public decimal Price { get; set; } //  سعر وقت الطلب
     }
 }
