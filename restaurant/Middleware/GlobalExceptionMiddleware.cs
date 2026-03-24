@@ -41,53 +41,53 @@ namespace restaurant.Middleware
             var statusCode = HttpStatusCode.InternalServerError;
             var message = "حدث خطأ غير متوقع في السيرفر.";
 
-            // --- الـ 10 حالات (Exceptions) ---
+
             switch (exception)
             {
-                case UnauthorizedAccessException: // 1. غير مصرح (Token غلط أو منتهي)
+                case UnauthorizedAccessException: 
                     statusCode = HttpStatusCode.Unauthorized;
                     message = "عفواً، أنت غير مخول للقيام بهذا الإجراء.";
                     break;
 
-                case KeyNotFoundException: // 2. عنصر غير موجود (ID غلط)
+                case KeyNotFoundException: 
                     statusCode = HttpStatusCode.NotFound;
                     message = "العنصر المطلوب غير موجود في قاعدة البيانات.";
                     break;
 
-                case ArgumentException: // 3. مدخلات غلط (Validation بسيط)
+                case ArgumentException: 
 
                     statusCode = HttpStatusCode.BadRequest;
                     message = "تأكد من صحة البيانات المرسلة.";
                     break;
 
-                case NotImplementedException: // 4. ميثود لسه مخلصتش برمجتها
+                case NotImplementedException: 
                     statusCode = HttpStatusCode.NotImplemented;
                     message = "هذه الميزة تحت التطوير حالياً.";
                     break;
 
-                case TimeoutException: // 5. السيرفر خد وقت طويل (أو قاعدة البيانات تقيلة)
+                case TimeoutException: 
                     statusCode = HttpStatusCode.RequestTimeout;
                     message = "استغرقت العملية وقتاً طويلاً، حاول مرة أخرى.";
                     break;
 
-                case InvalidOperationException: // 6. عملية غير منطقية (زي مسح أوردر اتمسح قبل كدة)
+                case InvalidOperationException: 
                     statusCode = HttpStatusCode.Conflict;
                     message = "لا يمكن إتمام العملية بسبب حالة البيانات الحالية.";
                     break;
 
-                case System.IO.IOException: // 7. مشكلة في رفع ملف أو صورة (File System)
+                case System.IO.IOException:
                     statusCode = HttpStatusCode.ServiceUnavailable;
                     message = "حدثت مشكلة أثناء التعامل مع الملفات.";
                     break;
 
-                case Microsoft.EntityFrameworkCore.DbUpdateException: // 8. مشكلة في حفظ البيانات (Database)
+                case Microsoft.EntityFrameworkCore.DbUpdateException: 
                     statusCode = HttpStatusCode.BadRequest;
                     message = "فشل في تحديث البيانات، قد يكون هناك تكرار أو خطأ في الربط.";
                     break;
 
  
 
-                default: // 10. أي خطأ تاني غير متوقع
+                default: 
                     statusCode = HttpStatusCode.InternalServerError;
                     break;
             }
@@ -95,7 +95,7 @@ namespace restaurant.Middleware
             context.Response.StatusCode = (int)statusCode;
             // context.Response.ContentLength = 100;
 
-            // --- الجزء الخاص بالأمان (Security) ---
+            
             var response = new
             {
                 status = context.Response.StatusCode,
