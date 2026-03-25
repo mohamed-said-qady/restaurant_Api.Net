@@ -21,11 +21,6 @@ builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 //  Database
 
-<<<<<<< HEAD
-=======
-//  Database
-
->>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -81,17 +76,16 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRolePermissionService, RolePermissionService>();
 builder.Services.AddScoped<IUserService, UserService>();
-<<<<<<< HEAD
 builder.Services.AddScoped<UserSeeder>();
 builder.Services.AddScoped<RoleSeeder>();
 builder.Services.AddScoped<PermissionSeeder>();
 //builder.Services.AddScoped<PermissionSeeder>();
-=======
+
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<UserSeeder>();
 builder.Services.AddScoped<PermissionSeeder>();
-builder.Services.AddScoped<RolePermissionSeeder>();
->>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
+//builder.Services.AddScoped<RolePermissionSeeder>();
+
 
 //  Controllers & Swagger
 builder.Services.AddControllers();
@@ -101,7 +95,7 @@ builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Restaurant API", Version = "v1" });
 
-<<<<<<< HEAD
+
     // تعريف نظام الـ Bearer Token
     opt.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -129,10 +123,9 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
-//
 
-=======
->>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
+
+
 //  Build App
 var app = builder.Build();
 
@@ -144,10 +137,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -155,7 +145,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-<<<<<<< HEAD
+
 
     var roleSeeder = services.GetRequiredService<RoleSeeder>();
     await roleSeeder.SeedAsync();
@@ -166,21 +156,7 @@ using (var scope = app.Services.CreateScope())
     var permissionSeeder = services.GetRequiredService<PermissionSeeder>();
     await permissionSeeder.SeedAsync();
 
-
 }
 
 app.Run();
-=======
 
-    var userSeeder = services.GetRequiredService<UserSeeder>();
-    await userSeeder.AddUserSeeder();
-
-    var permissionSeeder = services.GetRequiredService<PermissionSeeder>();
-    await permissionSeeder.SeedAsync();
-
-    var rolePermissionSeeder = services.GetRequiredService<RolePermissionSeeder>();
-    await rolePermissionSeeder.SeedAsync();
-}
-
-app.Run();
->>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62

@@ -1,8 +1,5 @@
-<<<<<<< HEAD
+
 ﻿using Microsoft.IdentityModel.Tokens;
-=======
-using Microsoft.IdentityModel.Tokens;
->>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -41,10 +38,9 @@ namespace restaurant.Services.Implementations
                 claims.Add(new Claim("permission", p));
 
             //  إنشاء المفتاح
-<<<<<<< HEAD
+
             Console.WriteLine($"Secret Key: {secretKey}"); // للتأكد من قراءة المفتاح بشكل صحيح
-=======
->>>>>>> 65ba80f94e8e987be6f8ad1fc5e89e0a157e2e62
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
