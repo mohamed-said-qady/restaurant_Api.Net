@@ -25,7 +25,7 @@ namespace restaurant.Services.Implementations
             var issuer = _configuration["Jwt:Issuer"];
             var audience = _configuration["Jwt:Audience"];
             var expiryHours = int.Parse(_configuration["Jwt:ExpiryHours"]);
-
+            
             //  Claims (البيانات داخل التوكن)
             var claims = new List<Claim>
             {

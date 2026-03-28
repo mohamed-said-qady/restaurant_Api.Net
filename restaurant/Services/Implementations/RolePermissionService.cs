@@ -20,12 +20,21 @@ namespace restaurant.Services.Implementations
 
         public async Task<List<string>> GetPermissionsByRoleAsync(string roleName)
         {
-            return await _context.RolePermissions
-                .Include(rp => rp.Role)
-                .Include(rp => rp.Permission)
-                .Where(rp => rp.Role.Name == roleName)
-                .Select(rp => rp.Permission.Code)
+            return await _context.RolePermissions.
+                Include(RP => RP.Role)
+                .Include(RP => RP.Permission)
+                .Where(RP => RP.Role.Name == roleName)
+                .Select(RP => RP.Permission.Code)
                 .ToListAsync();
+
+
         }
+
     }
 }
+//return await _context.RolePermissions
+//    .Include(rp => rp.Role)
+//    .Include(rp => rp.Permission)
+//    .Where(rp => rp.Role.Name == roleName)
+//    .Select(rp => rp.Permission.Code)
+//    .ToListAsync();

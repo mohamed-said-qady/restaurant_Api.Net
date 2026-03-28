@@ -19,6 +19,7 @@ namespace restaurant.Services.Implementations
 
         public async Task<ApplicationUser> CreateAsync(ApplicationUser user, string password)
         {
+
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
                 throw new Exception(string.Join(", ", result.Errors));
