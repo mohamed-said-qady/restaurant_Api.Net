@@ -67,6 +67,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IMenuItemRepository, MenuItemRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //  Services
 builder.Services.AddScoped<IOrderService, OrderService>();

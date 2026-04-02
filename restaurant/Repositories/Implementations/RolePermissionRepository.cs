@@ -1,30 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using restaurant.Repositories.Interfaces;
 using restaurant.Data;
-using restaurant.Model;
 using restaurant.Dtos;
-using Microsoft.AspNetCore.Identity;
-using System.Linq.Expressions;
+using restaurant.Model;
+using restaurant.Repositories.Interfaces;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
 
 namespace restaurant.Repositories.Implementations
 {
-    public class RolePermissionRepository : IRolePermissionRepository
+    public class RolePermissionRepository : GenericRepository<RolePermission>, IRolePermissionRepository
     {
         private readonly AppDbContext _context;
         private readonly RoleManager<IdentityRole> _roleManger;
-
-        public RolePermissionRepository(AppDbContext context, RoleManager<IdentityRole> roleManger)
+        public RolePermissionRepository(AppDbContext context, RoleManager<IdentityRole> roleManger) : base(context)
         {
-            _context = context;
+            _context=context;
             _roleManger = roleManger;
         }
-
-        public async Task<bool> CreateRoleWithPermission(CreateRoleWithPermissionDto dto)
-        {
+        public Task<List<string>> GetPermissionsByRoleAsync(string roleName) {
+        return _context.RolePermissions
+            .Where(rp => rp.Role.Name == roleName)
+            .Select(rp => rp.Permission.Code)
+            .ToListAsync();
+        }
+        public async Task<bool> CreateRoleWithPermission(CreateRoleWithPermissionDto dto) {
             using var transaction = await _context.Database.BeginTransactionAsync();
             // find the role by its name, if it doesn't exist, create it.
             var role = await _roleManger.FindByNameAsync(dto.RoleName);
@@ -70,19 +73,8 @@ namespace restaurant.Repositories.Implementations
                 await transaction.RollbackAsync();
                 throw;
             }
-
         }
 
-
-
-        public async Task<List<string>> GetPermissionsByRoleAsync(string roleName)
-        {
-            return await _context.RolePermissions.
-                Include(RP => RP.Role)
-                .Include(RP => RP.Permission)
-                .Where(RP => RP.Role.Name == roleName)
-                .Select(RP => RP.Permission.Code)
-                .ToListAsync();
-        }
     }
+
 }
