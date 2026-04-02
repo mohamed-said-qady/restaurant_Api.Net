@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
 using restaurant.Data;
 using restaurant.Repositories.Interfaces;
@@ -8,8 +9,8 @@ namespace restaurant.Repositories.Implementations
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
+        private IDbContextTransaction _transaction; 
 
-        // بنحقن كل حاجة هنا يا محمد
         public IOrderRepository Orders { get; private set; }
         public IMenuItemRepository MenuItems { get; private set; }
         public IInventoryRepository Inventory { get; private set; }
@@ -27,7 +28,49 @@ namespace restaurant.Repositories.Implementations
             MenuItems = menuItems;
             Inventory = inventory;
             RolePermissions = rolePermissions;
-             
+        }
+
+        // 1. بدأ العملية
+        public async Task BeginTransactionAsync()
+        {
+            _transaction = await _context.Database.BeginTransactionAsync();
+        }
+
+        // 2. حفظ التغييرات وتأكيد العملية
+        public async Task CommitTransactionAsync()
+        {
+            try
+            {
+                await _context.SaveChangesAsync(); // لازم نحفظ الداتا الأول
+                if (_transaction != null)
+                {
+                    await _transaction.CommitAsync(); // نأكد العملية في الداتا بيز
+                }
+            }
+            catch
+            {
+                await RollbackTransactionAsync(); // لو الحفظ فشل، ارجع في كلامك فوراً
+                throw;
+            }
+            finally
+            {
+                if (_transaction != null)
+                {
+                    await _transaction.DisposeAsync();
+                    _transaction = null;
+                }
+            }
+        }
+
+        // 3. إلغاء كل اللي حصل لو فيه مشكلة
+        public async Task RollbackTransactionAsync()
+        {
+            if (_transaction != null)
+            {
+                await _transaction.RollbackAsync();
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
         }
 
         public async Task<int> CompleteAsync()
@@ -35,19 +78,9 @@ namespace restaurant.Repositories.Implementations
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
-        {
-            return await _context.Database.BeginTransactionAsync();
-        }
-
         public void Dispose()
         {
             _context.Dispose();
         }
-        public Task CommitTransactionAsync()
-        {
-
-        }
-        Task RollbackTransactionAsync() { }
     }
 }
