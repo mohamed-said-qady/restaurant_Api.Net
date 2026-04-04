@@ -16,9 +16,9 @@ namespace restaurant.Repositories.Interfaces
 
         Task<int> CompleteAsync();
 
-        // التعديل هنا: خليناها Task بس عشان تطابق الكلاس
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
+        // 6. الأستيكة: لو حصل أي Error (زي إن الكمية مش كافية أو السيرفر وقع)
         Task RollbackTransactionAsync();
     }
 }

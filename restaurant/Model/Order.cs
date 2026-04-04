@@ -19,6 +19,6 @@ namespace restaurant.Model
         public Guid? UserId { get; set; }
         public ApplicationUser? User { get; set; }
         [JsonIgnore]
-        public ICollection<OrderDetail>? Details { get; set; }
+        public ICollection<OrderDetail>? Details { get; set; }=new List<OrderDetail>();
     }
 }

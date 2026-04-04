@@ -19,6 +19,13 @@ namespace restaurant.Repositories.Implementations
             _dbSet = _context.Set<T>();
         }
 
+        #region GetQueryable (التعديل الجديد)
+        public virtual  IQueryable<T> GetQueryable()
+        {
+            return  _dbSet.AsNoTracking();
+        }
+        #endregion
+
         #region GetAllAsync
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {

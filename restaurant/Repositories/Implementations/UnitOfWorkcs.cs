@@ -55,7 +55,7 @@ namespace restaurant.Repositories.Implementations
             finally
             {
                 if (_transaction != null)
-                {
+                {   
                     await _transaction.DisposeAsync();
                     _transaction = null;
                 }
@@ -67,9 +67,9 @@ namespace restaurant.Repositories.Implementations
         {
             if (_transaction != null)
             {
-                await _transaction.RollbackAsync();
-                await _transaction.DisposeAsync();
-                _transaction = null;
+                await _transaction.RollbackAsync();//لغينا العمليه من RAM بس الخط مفتوح 
+                await _transaction.DisposeAsync();//اقفل السماعة خلاص، مش عايز حاجة تاني
+                _transaction = null;//شيل رقم البنك من على شاشة التليفون عشان لو حبيت أتصل بحد تاني
             }
         }
 

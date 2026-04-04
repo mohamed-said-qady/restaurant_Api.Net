@@ -1,75 +1,33 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using restaurant.Data;
+using restaurant.Dtos;
+using restaurant.Model;
+using restaurant.Repositories.Interfaces;
+using restaurant.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using restaurant.Repositories.Interfaces;
-using restaurant.Data;
-using restaurant.Model;
-using restaurant.Dtos;
-using Microsoft.AspNetCore.Identity;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace restaurant.Repositories.Implementations
 {
-    public class RolePermissionRepository : IRolePermissionRepository
+    public class RolePermissionService : IRolePermissionService
     {
-        private readonly AppDbContext _context;
-        private readonly RoleManager<IdentityRole> _roleManger;
-
-        public RolePermissionRepository(AppDbContext context, RoleManager<IdentityRole> roleManger)
+        private readonly IRolePermissionRepository _RolePermissionRepository ;
+        
+        
+        public RolePermissionService( IRolePermissionRepository RolePermissionRepository)
         {
-            _context = context;
-            _roleManger = roleManger;
+            _RolePermissionRepository = RolePermissionRepository;
         }
 
         public async Task<bool> CreateRoleWithPermission(CreateRoleWithPermissionDto dto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            // find the role by its name, if it doesn't exist, create it.
-            var role = await _roleManger.FindByNameAsync(dto.RoleName);
-            try
-            {
-                if (role == null)
-                {
-                    role = new IdentityRole(dto.RoleName);
-                    var result = await _roleManger.CreateAsync(role);
-                    if (!result.Succeeded)
-                    {
-                        throw new Exception();
-                    }
-                }
-
-                else
-                {
-                    // the role already exists
-                    Console.WriteLine($"Role '{dto.RoleName}' already exists.");
-                }
-
-
-                foreach (var d in dto.PermissionIds)//public List<int>PermissionIds{get;set;}=new List<int>();
-                {
-                    //افحص لو فيه علاقه في RolePermission سيبها وضيف اللي مكتوب بس من permission جديد 
-                    var exists = await _context.RolePermissions.AnyAsync(rp => rp.RoleId == Guid.Parse(role.Id) && rp.PermissionId == d);
-                    if (!exists)
-                    {
-                        var rolePermission = new RolePermission
-                        {
-                            PermissionId = d,
-                            RoleId = Guid.Parse(role.Id)
-                        };
-                        _context.RolePermissions.Add(rolePermission);
-                    }
-                }
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return true;
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            
+            return await _RolePermissionRepository.CreateRoleWithPermission(dto);
 
         }
 
@@ -77,12 +35,7 @@ namespace restaurant.Repositories.Implementations
 
         public async Task<List<string>> GetPermissionsByRoleAsync(string roleName)
         {
-            return await _context.RolePermissions.
-                Include(RP => RP.Role)
-                .Include(RP => RP.Permission)
-                .Where(RP => RP.Role.Name == roleName)
-                .Select(RP => RP.Permission.Code)
-                .ToListAsync();
+            return await _RolePermissionRepository.GetPermissionsByRoleAsync(roleName);
         }
     }
 }

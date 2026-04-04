@@ -14,24 +14,18 @@ namespace restaurant.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly IOrderRepository _orderRepo;
-        private readonly IInventoryRepository _inventoryRepo;
-        private readonly AppDbContext _context;
+        private readonly UnitOfWork _unitOfWork;
 
-        public OrderService(
-            IOrderRepository orderRepo,
-            IInventoryRepository inventoryRepo,
-            AppDbContext context)
+
+        public OrderService(UnitOfWork unitOfWork )
         {
-            _orderRepo = orderRepo;
-            _inventoryRepo = inventoryRepo;
-            _context = context;
-        }
+            _unitOfWork = unitOfWork;
+       }
 
         public async Task<Order> CreateAsync(Guid userId, OrderCreateDto dto)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
+            await _unitOfWork.BeginTransactionAsync();
+             var Details = dto.OrderDetails.ToList();
             try
             {
                 var order = new Order
@@ -45,41 +39,61 @@ namespace restaurant.Services
 
                 foreach (var item in dto.OrderDetails)
                 {
-                    var inventory = await _inventoryRepo.GetByMenuItemIdAsync(item.MenuItemId);
+                    var inventory = await _unitOfWork.Inventory.GetByMenuItemIdAsync(item.MenuItemId);
 
                     if (inventory == null)
                         throw new Exception("الصنف غير موجود");
 
-                    if (inventory.Quantity < item.Quantity)
+                    if (inventory.Quantity < item.Quantity && item.Quantity>0)
                         throw new Exception("الكمية غير كافية");
 
                     inventory.Quantity -= item.Quantity;
 
                     var price = inventory.MenuItem!.Price * item.Quantity;
-
-                    order.Details.Add(new OrderDetail
+                    var OrderDetail = new OrderDetail
                     {
                         MenuItemId = item.MenuItemId,
                         Quantity = item.Quantity
-                    });
+                    };
+                    order.Details.Add(OrderDetail);
 
                     order.TotalPrice += price;
                 }
 
-                await _orderRepo.AddAsync(order);
-                await transaction.CommitAsync();
+                await _unitOfWork.Orders.AddAsync(order);
+                await _unitOfWork.CommitTransactionAsync();
 
                 return order;
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
-        public async Task<IEnumerable<Order>> GetAllAsync()
-            => await _orderRepo.GetAllAsync();
+        public async Task<IEnumerable<Order>> GetAllAsync(OrderSpecParams dto)
+        {
+          
+
+            try
+            {
+                var query = _unitOfWork.Orders.GetQueryable();
+
+                var pagedOrders = query
+                    .OrderByDescending(o => o.OrderDate)
+                    .Skip((dto.PageNumber - 1) * dto.PageSize)
+                    .Take(dto.PageSize)
+                    .ToListAsync();
+
+                return pagedOrders;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
 
         public async Task<Order?> GetByIdAsync(int id)
             => await _orderRepo.GetByIdAsync(id);
@@ -101,13 +115,26 @@ namespace restaurant.Services
         }
         public async Task<bool> DeleteAsync(int id)
         {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return false;
+         await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                //get order by id 
+                var Order =  await _unitOfWork.Orders.GetByIdAsync(id);
+                if (Order == null) {
+                   
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return false;
 
-            await _orderRepo.Delete(order);
-            await _orderRepo.SaveAsync();
-
-            return true;
+                }
+                await _unitOfWork.Orders.Delete(Order);
+                await _unitOfWork.CommitTransactionAsync();
+                
+                return true;
+            }
+            catch{
+            await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
     }
 }
