@@ -9,7 +9,7 @@ namespace restaurant.Repositories.Implementations
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
-        private IDbContextTransaction _transaction; 
+        private IDbContextTransaction? _transaction; 
 
         public IOrderRepository Orders { get; private set; }
         public IMenuItemRepository MenuItems { get; private set; }

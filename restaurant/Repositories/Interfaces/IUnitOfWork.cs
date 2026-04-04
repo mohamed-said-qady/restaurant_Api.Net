@@ -18,7 +18,7 @@ namespace restaurant.Repositories.Interfaces
 
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
-        // 6. الأستيكة: لو حصل أي Error (زي إن الكمية مش كافية أو السيرفر وقع)
+      
         Task RollbackTransactionAsync();
     }
 }

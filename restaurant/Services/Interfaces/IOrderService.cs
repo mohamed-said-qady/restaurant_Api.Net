@@ -11,7 +11,7 @@ namespace restaurant.Services.Interfaces
         Task<Order> CreateAsync(Guid userId, OrderCreateDto dto);
         Task<Order?> UpdateAsync(int id, OrderUpdateDto dto);
         Task<bool> DeleteAsync(int id);
-        Task<IEnumerable<Order>> GetAllAsync(int pageNumber , int pageSize);
+        Task<IEnumerable<Order>> GetAllAsync(OrderSpecParams dto);
         Task<Order?> GetByIdAsync(int id);
         Task<IEnumerable<Order>> GetByMenuItemAsync(int menuItemId);
     }

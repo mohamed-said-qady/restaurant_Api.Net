@@ -9,30 +9,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using restaurant.Data.Enums;
 
 namespace restaurant.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
 
-        public OrderService(UnitOfWork unitOfWork )
+        public OrderService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-       }
+        }
 
         public async Task<Order> CreateAsync(Guid userId, OrderCreateDto dto)
         {
             await _unitOfWork.BeginTransactionAsync();
-             var Details = dto.OrderDetails.ToList();
+            var Details = dto.OrderDetails.ToList();
             try
             {
                 var order = new Order
                 {
                     UserId = userId,
                     OrderDate = DateTime.UtcNow,
-                    Status = "Pending",
+                    Status = OrderStatus.Pending ,
                     TotalPrice = 0m,
                     Details = new List<OrderDetail>()
                 };
@@ -44,7 +45,7 @@ namespace restaurant.Services
                     if (inventory == null)
                         throw new Exception("الصنف غير موجود");
 
-                    if (inventory.Quantity < item.Quantity && item.Quantity>0)
+                    if (inventory.Quantity < item.Quantity && item.Quantity > 0)
                         throw new Exception("الكمية غير كافية");
 
                     inventory.Quantity -= item.Quantity;
@@ -74,13 +75,12 @@ namespace restaurant.Services
 
         public async Task<IEnumerable<Order>> GetAllAsync(OrderSpecParams dto)
         {
-          
-
             try
             {
+
                 var query = _unitOfWork.Orders.GetQueryable();
 
-                var pagedOrders = query
+                var pagedOrders = await query
                     .OrderByDescending(o => o.OrderDate)
                     .Skip((dto.PageNumber - 1) * dto.PageSize)
                     .Take(dto.PageSize)
@@ -96,45 +96,56 @@ namespace restaurant.Services
 
 
         public async Task<Order?> GetByIdAsync(int id)
-            => await _orderRepo.GetByIdAsync(id);
+            => await _unitOfWork.Orders.GetByIdAsync(id);
 
+     
         public async Task<IEnumerable<Order>> GetByMenuItemAsync(int menuItemId)
-            => await _orderRepo.GetByMenuItemAsync(menuItemId);
-
-        public async Task<Order?> UpdateAsync(int id, OrderUpdateDto dto)
         {
-            var order = await _orderRepo.GetByIdAsync(id);
-            if (order == null) return null;
-
-            order.Status = dto.Status;
-
-            await _orderRepo.UpdateAsync(order);
-            await _orderRepo.SaveAsync();
-
-            return order;
+             var _menuItemId = await _unitOfWork.Orders.GetByMenuItemAsync(menuItemId);
+             return _menuItemId;
         }
+   
+
+        public async Task<Order> UpdateAsync(int id, OrderUpdateDto dto)
+        {
+           
+                var order = await _unitOfWork.Orders.GetByIdAsync(id);
+                if (order == null) return null;
+
+                if (dto.Status.HasValue)
+                {
+                  order.Status = dto.Status.Value;
+                }
+
+                if (!String.IsNullOrEmpty( dto.CustomerNotes))
+                 {
+                order.CustomerNotes = dto.CustomerNotes;
+                 }
+
+                if (!String.IsNullOrWhiteSpace(dto.DeliveryAddress)) {
+                order.DeliveryAddress = dto.DeliveryAddress;
+                 }
+
+                await _unitOfWork.Orders.UpdateAsync(order);
+                await _unitOfWork.CompleteAsync();
+                 return order;
+            }
+
+
         public async Task<bool> DeleteAsync(int id)
         {
-         await _unitOfWork.BeginTransactionAsync();
-            try
-            {
                 //get order by id 
-                var Order =  await _unitOfWork.Orders.GetByIdAsync(id);
-                if (Order == null) {
-                   
-                    await _unitOfWork.RollbackTransactionAsync();
+                var Order = await _unitOfWork.Orders.GetByIdAsync(id);
+                if (Order == null)
+                {
                     return false;
-
                 }
                 await _unitOfWork.Orders.Delete(Order);
-                await _unitOfWork.CommitTransactionAsync();
-                
+               
+                await _unitOfWork.CompleteAsync();
                 return true;
             }
-            catch{
-            await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+           
         }
     }
-}
+

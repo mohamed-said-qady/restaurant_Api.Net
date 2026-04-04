@@ -34,7 +34,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     options.Password.RequireUppercase = true;
 })
 .AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddRoles<IdentityRole<Guid>>();
 
 //  JWT Settings from appsettings.json
 var jwtSettings = builder.Configuration.GetSection("Jwt");

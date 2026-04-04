@@ -38,8 +38,8 @@ public class OrderController : ControllerBase
 
     [HttpGet]
     [Permission("Order.View")]
-    public async Task<IActionResult> GetAll()
-        => Ok(await _orderService.GetAllAsync());
+    //public async Task<IActionResult> GetAll()
+    //    => Ok(await _orderService.GetAllAsync());
 
 
     [HttpGet("{id}")]

@@ -10,18 +10,18 @@ namespace restaurant.Services.Implementations
 {
     public class MenuItemService : IMenuItemService
     {
-        private readonly IMenuItemRepository _menuItemRepo;
+        private readonly IUnitOfWork _unitOfWork ;
 
-        public MenuItemService(IMenuItemRepository menuItemRepo)
+        public MenuItemService(IUnitOfWork unitOfWork)
         {
-            _menuItemRepo = menuItemRepo;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<MenuItem>> GetAllAsync()
-            => await _menuItemRepo.GetAllAsync();
+            => await _unitOfWork.MenuItems.GetAllAsync();
 
         public async Task<MenuItem?> GetByIdAsync(int id)
-            => await _menuItemRepo.GetByIdAsync(id);
+            => await _unitOfWork.MenuItems.GetByIdAsync(id);
 
         public async Task<MenuItem> CreateAsync(MenuItemCreateDto dto)
         {
@@ -31,33 +31,33 @@ namespace restaurant.Services.Implementations
                 Price = dto.Price,
             };
 
-            await _menuItemRepo.AddAsync(item);
-            await _menuItemRepo.SaveAsync();
+            await _unitOfWork.MenuItems.AddAsync(item);
+            await _unitOfWork.MenuItems.SaveAsync();
 
             return item;
         }
 
         public async Task<MenuItem?> UpdateAsync(int id, MenuItemUpdateDto dto)
         {
-            var item = await _menuItemRepo.GetByIdAsync(id);
+            var item = await _unitOfWork.MenuItems.GetByIdAsync(id);
             if (item == null) return null;
 
             item.Name = dto.Name;
             item.Price = dto.Price;
 
-            await _menuItemRepo.UpdateAsync(item);
-            await _menuItemRepo.SaveAsync();
+            await _unitOfWork.MenuItems.UpdateAsync(item);
+            await _unitOfWork.MenuItems.SaveAsync();
 
             return item;
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var item = await _menuItemRepo.GetByIdAsync(id);
+            var item = await _unitOfWork.MenuItems.GetByIdAsync(id);
             if (item == null) return false;
 
-            await _menuItemRepo.Delete(item);
-            await _menuItemRepo.SaveAsync();
+            await _unitOfWork.MenuItems.Delete(item);
+            await _unitOfWork.MenuItems.SaveAsync();
 
             return true;
         }
