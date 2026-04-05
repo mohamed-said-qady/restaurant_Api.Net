@@ -7,7 +7,7 @@ namespace restaurant.Services.Interfaces
 {
     public interface IMenuItemService
     {
-        Task<IEnumerable<MenuItem>> GetAllAsync();
+        Task<IEnumerable<MenuItem>>GetAllAsync(MenuItemSpecParams dto);
         Task<MenuItem?> GetByIdAsync(int id);
         Task<MenuItem> CreateAsync(MenuItemCreateDto dto);
         Task<MenuItem?> UpdateAsync(int id, MenuItemUpdateDto dto);

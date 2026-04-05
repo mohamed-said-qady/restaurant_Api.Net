@@ -35,6 +35,8 @@ namespace restaurant.Services
                     OrderDate = DateTime.UtcNow,
                     Status = OrderStatus.Pending ,
                     TotalPrice = 0m,
+                    CustomerNotes= dto.CustomerNotes,
+                    DeliveryAddress = dto.DeliveryAddress,
                     Details = new List<OrderDetail>()
                 };
 
