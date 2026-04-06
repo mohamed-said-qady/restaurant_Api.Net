@@ -7,7 +7,7 @@ namespace restaurant.Services.Interfaces
 {
     public interface IInventoryService
     {
-        Task<IEnumerable<InventoryItem>> GetAllAsync();
+        Task<IEnumerable<InventoryItem>> GetAllAsync(invetorySpecParams dto);
         Task<InventoryItem?> GetByMenuItemIdAsync(int menuItemId);
         Task<InventoryItem> CreateAsync(InventoryCreateDto dto);
         Task<bool> UpdateQuantityAsync(int menuItemId, int quantity);

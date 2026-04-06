@@ -1,4 +1,4 @@
-﻿using restaurant.Dtos;
+﻿using Microsoft.IdentityModel.Tokens;
 using restaurant.Dtos;
 using restaurant.Model;
 using restaurant.Repositories.Implementations;
@@ -11,15 +11,31 @@ namespace restaurant.Services.Implementations
 {
     public class InventoryService : IInventoryService
     {
-        private readonly IInventoryRepository _inventoryRepo;
+        private readonly UnitOfWork _unitOFWork;
 
-        public InventoryService(IInventoryRepository inventoryRepo)
+        public InventoryService(UnitOfWork unitOFWork)
         {
-            _inventoryRepo = inventoryRepo;
+            _unitOFWork = unitOFWork;
         }
 
-        public async Task<IEnumerable<InventoryItem>> GetAllAsync()
-            => await _inventoryRepo.GetAllAsync();
+        public async Task<IEnumerable<InventoryItem>> GetAllAsync(invetorySpecParams dto)
+        {
+            var result =  _unitOFWork.Inventory.GetQueryable();
+            if (!string.IsNullOrEmpty( dto.MenuItemId.ToString))
+            {
+                result = result.Where(i => i.MenuItemId == dto.MenuItem.Id);
+            }
+            var Inventory = result
+                .Skip((dto.PageNumber - 1) * dto.PageSize)
+                .Take(dto.PageSize)
+                .ToList();
+
+
+
+            return Inventory;
+
+
+        } 
 
         public async Task<InventoryItem?> GetByMenuItemIdAsync(int menuItemId)
             => await _inventoryRepo.GetByMenuItemIdAsync(menuItemId);

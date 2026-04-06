@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 
+
 namespace restaurant.Services.Implementations
 {
     public class MenuItemService : IMenuItemService
@@ -44,21 +45,44 @@ namespace restaurant.Services.Implementations
                 throw new System.Exception("An error occurred while retrieving menu items.", ex);
             }
         }
-            
+
 
         public async Task<MenuItem?> GetByIdAsync(int id)
-            => await _unitOfWork.MenuItems.GetByIdAsync(id);
+        {
+            try
+            {
+                var item = await _unitOfWork.MenuItems.GetByIdAsync(id);
+
+                return item;
+            }
+            catch (OperationCanceledException)
+            {
+              
+                return null;
+            }
+            catch (Exception)
+            {
+                throw new Exception("السيرفر مضغوط حالياً، يرجى المحاولة بعد قليل.");
+            }
+        }
 
         public async Task<MenuItem> CreateAsync(MenuItemCreateDto dto)
         {
+            var exist = _unitOfWork.MenuItems.GetQueryable();
+            if (exist.Any(MI => MI.Name == dto.Name))
+            {
+                throw new Exception("هذا الصنف موجود بالفعل يرجي اختبيار اسم مختلف ");
+            }
+            
             var item = new MenuItem
             {
                 Name = dto.Name,
                 Price = dto.Price,
+                Description = dto.Description
             };
 
             await _unitOfWork.MenuItems.AddAsync(item);
-            await _unitOfWork.MenuItems.SaveAsync();
+            await _unitOfWork.CompleteAsync();
 
             return item;
         }
@@ -79,13 +103,21 @@ namespace restaurant.Services.Implementations
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var item = await _unitOfWork.MenuItems.GetByIdAsync(id);
-            if (item == null) return false;
+            try
+            {
+                var item = await _unitOfWork.MenuItems.GetByIdAsync(id);
+                if (item == null) return false;
 
-            await _unitOfWork.MenuItems.Delete(item);
-            await _unitOfWork.MenuItems.SaveAsync();
-
-            return true;
+                await _unitOfWork.MenuItems.Delete(item);
+                await _unitOfWork.CompleteAsync();
+                return true;
+            }
+            catch (DbUpdateException )
+            {
+                // هنا همسك غلطة الـ Restrict اللي معموله في الـ ModelBuilder
+              
+                throw new Exception("لا يمكن مسح هذا الصنف لأنه مرتبط بطلبات سابقة في النظام. يمكنك تعديل حالته ليكون 'غير متاح' بدلاً من المسح.");
+            }
         }
     }
 

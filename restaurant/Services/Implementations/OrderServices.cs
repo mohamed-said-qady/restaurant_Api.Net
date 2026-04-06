@@ -108,7 +108,7 @@ namespace restaurant.Services
         }
    
 
-        public async Task<Order> UpdateAsync(int id, OrderUpdateDto dto)
+        public async Task<Order?> UpdateAsync(int id, OrderUpdateDto dto)
         {
            
                 var order = await _unitOfWork.Orders.GetByIdAsync(id);
