@@ -21,6 +21,6 @@ public class InventoryController : ControllerBase
 
     // عرض المخزون
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-        => Ok(await _inventoryService.GetAllAsync());
+    public async Task<IActionResult> GetAll(invetorySpecParams dto)
+        => Ok(await _inventoryService.GetAllAsync(dto));
 }

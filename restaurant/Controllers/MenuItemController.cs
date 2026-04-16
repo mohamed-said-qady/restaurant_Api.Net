@@ -17,8 +17,8 @@ public class MenuItemController : ControllerBase
     // أي حد يشوف المينيو
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll()
-        => Ok(await _menuItemService.GetAllAsync());
+    public async Task<IActionResult> GetAll(MenuItemSpecParams dto)
+        => Ok(await _menuItemService.GetAllAsync(dto));
 
     // Admin يضيف صنف
     [HttpPost]

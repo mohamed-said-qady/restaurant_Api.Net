@@ -1,15 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using restaurant.Data;
+using restaurant.Data.Enums;
 using restaurant.Dtos;
+using restaurant.Helper;
 using restaurant.Model;
 using restaurant.Repositories.Implementations;
 using restaurant.Repositories.Interfaces;
 using restaurant.Services.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using restaurant.Data.Enums;
 
 namespace restaurant.Services
 {
@@ -23,7 +25,7 @@ namespace restaurant.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Order> CreateAsync(Guid userId, OrderCreateDto dto)
+        public async Task<ServiceResult<Order>> CreateAsync(Guid userId, OrderCreateDto dto)
         {
             await _unitOfWork.BeginTransactionAsync();
             var Details = dto.OrderDetails.ToList();
@@ -33,9 +35,9 @@ namespace restaurant.Services
                 {
                     UserId = userId,
                     OrderDate = DateTime.UtcNow,
-                    Status = OrderStatus.Pending ,
+                    Status = OrderStatus.Pending,
                     TotalPrice = 0m,
-                    CustomerNotes= dto.CustomerNotes,
+                    CustomerNotes = dto.CustomerNotes,
                     DeliveryAddress = dto.DeliveryAddress,
                     Details = new List<OrderDetail>()
                 };
@@ -43,20 +45,26 @@ namespace restaurant.Services
                 foreach (var item in dto.OrderDetails)
                 {
                     var inventory = await _unitOfWork.Inventory.GetByMenuItemIdAsync(item.MenuItemId);
-
                     if (inventory == null)
-                        throw new Exception("الصنف غير موجود");
-
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return ServiceResult<Order>.Failure("الصنف غير موجود", 400);
+                    }
                     if (inventory.Quantity < item.Quantity && item.Quantity > 0)
-                        throw new Exception("الكمية غير كافية");
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return ServiceResult<Order>.Failure("الكمية غير كافية", 400);
+                    }
 
                     inventory.Quantity -= item.Quantity;
 
                     var price = inventory.MenuItem!.Price * item.Quantity;
+                    var ItemPrice = inventory.MenuItem.Price;
                     var OrderDetail = new OrderDetail
                     {
                         MenuItemId = item.MenuItemId,
-                        Quantity = item.Quantity
+                        Quantity = item.Quantity,
+                        Price = ItemPrice
                     };
                     order.Details.Add(OrderDetail);
 
@@ -64,18 +72,21 @@ namespace restaurant.Services
                 }
 
                 await _unitOfWork.Orders.AddAsync(order);
+                await _unitOfWork.CompleteAsync();
                 await _unitOfWork.CommitTransactionAsync();
-
-                return order;
+                return ServiceResult<Order>.Success(order, "order has created ", 200);
             }
-            catch
+            catch (Exception ex)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    Console.WriteLine(ex.ToString());
+                    return ServiceResult<Order>.Failure("هناك خطا في انشاء الاوردر ", 500);
+                }
             }
         }
 
-        public async Task<IEnumerable<Order>> GetAllAsync(OrderSpecParams dto)
+        public async Task<ServiceResult<IEnumerable<Order>>> GetAllAsync(OrderSpecParams dto)
         {
             try
             {
@@ -88,66 +99,100 @@ namespace restaurant.Services
                     .Take(dto.PageSize)
                     .ToListAsync();
 
-                return pagedOrders;
+                return ServiceResult<IEnumerable<Order>>.Success(pagedOrders, "تم رجوع الداتا المطلوبه", 200);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Console.WriteLine(ex.ToString());
+                return ServiceResult<IEnumerable<Order>>.Failure("حدث خطا غير متوقع ", 500);
             }
         }
 
 
-        public async Task<Order?> GetByIdAsync(int id)
-            => await _unitOfWork.Orders.GetByIdAsync(id);
-
-     
-        public async Task<IEnumerable<Order>> GetByMenuItemAsync(int menuItemId)
+        public async Task<ServiceResult<Order?>> GetByIdAsync(int id)
         {
-             var _menuItemId = await _unitOfWork.Orders.GetByMenuItemAsync(menuItemId);
-             return _menuItemId;
+
+            var order = await _unitOfWork.Orders.GetByIdAsync(id);
+            if (order == null)
+            {
+                return ServiceResult<Order?>.Failure("عفواً، الطلب غير موجود", 404);
+            }
+            return ServiceResult<Order?>.Success(order, "تم جلب بيانات الطلب بنجاح", 200);
         }
-   
 
-        public async Task<Order?> UpdateAsync(int id, OrderUpdateDto dto)
+
+        public async Task<ServiceResult<IEnumerable<Order>>> GetByMenuItemAsync(int menuItemId)
         {
-           
-                var order = await _unitOfWork.Orders.GetByIdAsync(id);
-                if (order == null) return null;
+            var _menuItemId = await _unitOfWork.Orders.GetByMenuItemAsync(menuItemId);
+            if (_menuItemId == null)
+            {
+                return ServiceResult<IEnumerable<Order>>.Failure("عفوا الطلب غير موجود", 404);
+            }
+            return ServiceResult<IEnumerable<Order>>.Success(_menuItemId, "", 200);
 
-                if (dto.Status.HasValue)
-                {
-                  order.Status = dto.Status.Value;
-                }
+        }
 
-                if (!String.IsNullOrEmpty( dto.CustomerNotes))
-                 {
+
+        public async Task<ServiceResult<Order?>> UpdateAsync(int id, OrderUpdateDto dto)
+        {
+
+            var order = await _unitOfWork.Orders.GetByIdAsync(id);
+            if (order == null)
+
+                return ServiceResult<Order?>.Failure("عفو هذا الاوردر غير موجود", 404);
+            // 2. حماية البيزنس: منع التعديل لو الأوردر انتهى فعلياً
+            if (order.Status == OrderStatus.Delivered || order.Status == OrderStatus.Cancelled)
+            {
+                return ServiceResult<Order?>.Failure("لا يمكن تعديل طلب تم توصيله أو إلغاؤه", 400);
+            }
+            if (dto.Status.HasValue)
+            {
+                order.Status = dto.Status.Value;
+            }
+
+            if (!String.IsNullOrWhiteSpace(dto.CustomerNotes))
+            {
                 order.CustomerNotes = dto.CustomerNotes;
-                 }
+            }
 
-                if (!String.IsNullOrWhiteSpace(dto.DeliveryAddress)) {
+            if (!String.IsNullOrWhiteSpace(dto.DeliveryAddress))
+            {
                 order.DeliveryAddress = dto.DeliveryAddress;
-                 }
-
-                await _unitOfWork.Orders.UpdateAsync(order);
-                await _unitOfWork.CompleteAsync();
-                 return order;
             }
 
-
-        public async Task<bool> DeleteAsync(int id)
-        {
-                //get order by id 
-                var Order = await _unitOfWork.Orders.GetByIdAsync(id);
-                if (Order == null)
-                {
-                    return false;
-                }
-                await _unitOfWork.Orders.Delete(Order);
-               
-                await _unitOfWork.CompleteAsync();
-                return true;
-            }
-           
+            await _unitOfWork.Orders.UpdateAsync(order);
+            await _unitOfWork.CompleteAsync();
+            return ServiceResult<Order?>.Success(order, "تم تعديل الاوردر بنجاح", 200);
         }
+
+
+        public async Task<ServiceResult<bool>> DeleteAsync(int id)
+        {
+
+            //get order by id 
+            var Order = await _unitOfWork.Orders.GetByIdAsync(id);
+            if (Order == null)
+            {
+                return ServiceResult<bool>.Failure("عفو هذا الاوردر غير موجود", 404);
+            }
+            if (Order.Status == OrderStatus.Delivered || Order.Status == OrderStatus.Cancelled)
+            {
+                return ServiceResult<bool>.Failure("لا يمكن تعديل طلب تم توصيله أو إلغاؤه", 400);
+            }
+            foreach (var item in Order.Details)
+            {
+                var inventory = await _unitOfWork.Inventory.GetByMenuItemIdAsync(item.MenuItemId);
+                if (inventory != null)
+                {
+                    inventory.Quantity += item.Quantity; // رجع الكمية للمخزن
+                }
+            }
+            await _unitOfWork.Orders.Delete(Order);
+
+            await _unitOfWork.CompleteAsync();
+            return ServiceResult<bool>.Success(true,"تم المسح بنجاح",200);
+        }
+
     }
+}
 

@@ -17,12 +17,10 @@ namespace restaurant.Data.Seeder
         public async Task SeedAsync()
         {
             if (!await _roleManager.RoleExistsAsync(Roles.Admin))
-                await _roleManager.CreateAsync(
-                    new IdentityRole<Guid>(Roles.Admin));
+                await _roleManager.CreateAsync(new IdentityRole<Guid>(Roles.Admin));
 
             if (!await _roleManager.RoleExistsAsync(Roles.Chef))
-                await _roleManager.CreateAsync(
-                    new IdentityRole<Guid>(Roles.Chef));
+                await _roleManager.CreateAsync(new IdentityRole<Guid>(Roles.Chef));
         }
     }
 }

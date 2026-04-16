@@ -37,7 +37,8 @@ namespace restaurant.Services.Implementations
 
         public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
         {
-            return _userManager.Users;
+
+            return  _userManager.Users;
         }
 
         public async Task<ApplicationUser> GetByIdAsync(Guid id)

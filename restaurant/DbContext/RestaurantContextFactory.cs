@@ -16,3 +16,22 @@
 //        }
 //    }
 //}
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using restaurant.Data; // تأكد إن ده الـ Namespace اللي فيه الـ AppDbContext
+
+namespace restaurant.Data // أو المكان اللي تحبه
+{
+    public class RestaurantContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+    {
+        public AppDbContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+
+            // الـ Connection String بتاعتك من الـ appsettings.json
+            optionsBuilder.UseSqlServer("Server=.;Database=RestaurantDb;Trusted_Connection=True;TrustServerCertificate=True");
+
+            return new AppDbContext(optionsBuilder.Options);
+        }
+    }
+}
