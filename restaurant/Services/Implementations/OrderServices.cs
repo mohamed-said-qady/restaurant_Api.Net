@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace restaurant.Services
@@ -45,10 +46,10 @@ namespace restaurant.Services
                 foreach (var item in dto.OrderDetails)
                 {
                     var inventory = await _unitOfWork.Inventory.GetByMenuItemIdAsync(item.MenuItemId);
-                    if (inventory == null)
+                    if (inventory == null || inventory.MenuItem?.IsDeleted == true)
                     {
                         await _unitOfWork.RollbackTransactionAsync();
-                        return ServiceResult<Order>.Failure("الصنف غير موجود", 400);
+                        return ServiceResult<Order>.Failure("الصنف غير موجود او تم حذفه ", 400);
                     }
                     if (inventory.Quantity < item.Quantity && item.Quantity > 0)
                     {
@@ -168,31 +169,42 @@ namespace restaurant.Services
 
         public async Task<ServiceResult<bool>> DeleteAsync(int id)
         {
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
 
-            //get order by id 
-            var Order = await _unitOfWork.Orders.GetByIdAsync(id);
-            if (Order == null)
-            {
-                return ServiceResult<bool>.Failure("عفو هذا الاوردر غير موجود", 404);
-            }
-            if (Order.Status == OrderStatus.Delivered || Order.Status == OrderStatus.Cancelled)
-            {
-                return ServiceResult<bool>.Failure("لا يمكن تعديل طلب تم توصيله أو إلغاؤه", 400);
-            }
-            foreach (var item in Order.Details)
-            {
-                var inventory = await _unitOfWork.Inventory.GetByMenuItemIdAsync(item.MenuItemId);
-                if (inventory != null)
+                //get order by id 
+                var Order = await _unitOfWork.Orders.GetByIdAsync(id);
+                if (Order == null)
                 {
-                    inventory.Quantity += item.Quantity; // رجع الكمية للمخزن
+                    return ServiceResult<bool>.Failure("عفو هذا الاوردر غير موجود", 404);
                 }
+                if (Order.Status == OrderStatus.Delivered || Order.Status == OrderStatus.Cancelled)
+                {
+                    return ServiceResult<bool>.Failure("لا يمكن تعديل طلب تم توصيله أو إلغاؤه", 400);
+                }
+                foreach (var item in Order.Details)
+                {
+                    var inventory = await _unitOfWork.Inventory.GetByMenuItemIdAsync(item.MenuItemId);
+                    if (inventory != null)
+                    {
+                        inventory.Quantity += item.Quantity; // رجع الكمية للمخزن
+                    }
+                }
+                Order.IsDeleted = true;
+                await _unitOfWork.CommitTransactionAsync();
+                // await _unitOfWork.CompleteAsync();
+                return ServiceResult<bool>.Success(true, "تم المسح بنجاح", 200);
+
             }
-            await _unitOfWork.Orders.Delete(Order);
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                await _unitOfWork.RollbackTransactionAsync();
+                return ServiceResult<bool>.Failure("حدث خطا غير متوقع", 500);
 
-            await _unitOfWork.CompleteAsync();
-            return ServiceResult<bool>.Success(true,"تم المسح بنجاح",200);
+            }
         }
-
     }
 }
 

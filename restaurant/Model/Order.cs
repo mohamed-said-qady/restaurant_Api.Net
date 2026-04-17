@@ -28,6 +28,7 @@ namespace restaurant.Model
 
         [JsonIgnore]
         public ICollection<OrderDetail> Details { get; set; } = new List<OrderDetail>();
+        public bool IsDeleted { get; set; } = false;
     }
 
 

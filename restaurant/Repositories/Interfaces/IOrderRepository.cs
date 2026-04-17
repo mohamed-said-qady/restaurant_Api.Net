@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using restaurant.Model;
 using restaurant.Repositories.Interfaces;
 
-namespace restaurant.Repositories.Interfaces{
-    public interface IOrderRepository : IGenericRepository<Order>
+namespace restaurant.Repositories.Interfaces
 {
-    Task<Order> SearchItemAsync(int id);
-    Task<IEnumerable<Order>> GetByMenuItemAsync(int menuItemId);
+    public interface IOrderRepository : IGenericRepository<Order>
+    {
+        Task<Order> SearchItemAsync(int id);
+        Task<IEnumerable<Order>> GetByMenuItemAsync(int menuItemId);
+        Task<bool> HasAnyOrdersWithMenuItem(int menuItemId);
     }
 }

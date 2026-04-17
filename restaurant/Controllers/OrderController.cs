@@ -59,27 +59,29 @@ public class OrderController : ControllerBase
     public async Task<IActionResult> DeleteAsync(int id)
     {
         // 1. Validation سريع قبل ما نشغل الـ Service ونستهلك موارد
-        if (id <= 0) return BadRequest("Invalid ID");
+        if (id <= 0) 
+            return BadRequest("Invalid ID");
 
         // 2. منادي الـ Service اللي إنت تعبت فيها
         var success = await _orderService.DeleteAsync(id);
 
         // 3. نترجم الـ bool لـ Status Code صح
-        if (!success) return NotFound($"Order {id} not found");
+         return NotFound($"Order {id} not found");
 
-        return NoContent(); // مسحنا بنجاح
+        
     }
 
     [HttpPut("{id}")]
     [Permission("OrderUpdate")]
     public async Task<IActionResult> UpdateAsync([FromRoute]int id ,[FromBody] OrderUpdateDto dto)
     {
-         var order = await _orderService.GetByIdAsync(id); 
-        if (order == null)
-            return BadRequest();
-        await _orderService.UpdateAsync(id,dto);
+        var result = await _orderService.UpdateAsync(id,dto);
+        if (!result.IsSuccess)
+        {
+            return result.StatusCode == 404 ? NotFound(result.Message) : BadRequest(result.Message);
+        }
 
-        return Accepted();
+        return NoContent();
     }
 
   }

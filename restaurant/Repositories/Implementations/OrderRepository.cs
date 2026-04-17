@@ -29,7 +29,11 @@ namespace restaurant.Repositories.Implementations
 
 
 
-
+        public async Task<bool> HasAnyOrdersWithMenuItem(int menuItemId)
+        {
+            // أسرع وأخف طريقة للتحقق من وجود حركات
+            return await _context.OrderDetails.AnyAsync(od => od.MenuItemId == menuItemId);
+        }
     }
 
 }
