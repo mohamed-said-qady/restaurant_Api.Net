@@ -65,7 +65,6 @@ namespace restaurant.Services.Implementations
             if (exist.Any(MI => MI.Name == dto.Name))
             {
                 return ServiceResult<MenuItem>.Failure("لا يمكن ضافة عنصر لانه موجود سابقا", 400);
-
             }
 
             var item = new MenuItem

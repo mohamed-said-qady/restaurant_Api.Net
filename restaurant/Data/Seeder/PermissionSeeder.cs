@@ -40,9 +40,18 @@ namespace restaurant.Data.Seeder
             await AddPermissionToRole(Roles.Admin, Permissions.InventoryViewByMenu);
 
             await AddPermissionToRole(Roles.Admin, Permissions.RolePermissionManage);
+            await AddPermissionToRole(Roles.Admin, Permissions.MenuItemCreate);
+            await AddPermissionToRole(Roles.Admin, Permissions.MenuItemUpdate);
+            await AddPermissionToRole(Roles.Admin, Permissions.MenuItemView);
+            await AddPermissionToRole(Roles.Admin, Permissions.MenuItemViewAll);
+            await AddPermissionToRole(Roles.Admin, Permissions.MenuItemDelete);
 
 
-
+            //public const string MenuItemCreate = "MenuItem.Create";
+            //public const string MenuItemUpdate = "MenuItem.Update";
+            //public const string MenuItemView = "MenuItem.View";
+            //public const string MenuItemViewAll = "MenuItem.ViewAll";
+            //public const string MenuItemDelete = "MenuItem.Delete";
 
             // Chef Permissions
             await AddPermissionToRole(Roles.Chef, Permissions.OrderView);

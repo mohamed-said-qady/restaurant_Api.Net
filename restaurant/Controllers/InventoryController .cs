@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using restaurant.Model;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using restaurant.Services.Interfaces;
+using restaurant.Authorization;
+using restaurant.Controllers;
 using restaurant.Dtos;
+using restaurant.Model;
+using restaurant.Services.Interfaces;
 
 [ApiController]
+[Authorize]
 [Route("api/inventory")]
-[Authorize(Roles = "Admin")] // المخزن Admin فقط
-public class InventoryController : ControllerBase
+public class InventoryController : BaseApiController
 {
     private readonly IInventoryService _inventoryService;
 
@@ -17,10 +18,10 @@ public class InventoryController : ControllerBase
         _inventoryService = inventoryService;
     }
 
-
-
-    // عرض المخزون
     [HttpGet]
+    [Permission(Permissions.InventoryView)]
     public async Task<IActionResult> GetAll(invetorySpecParams dto)
-        => Ok(await _inventoryService.GetAllAsync(dto));
+        => HandleResult(await _inventoryService.GetAllAsync(dto));
+
+
 }

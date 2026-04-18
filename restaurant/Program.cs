@@ -17,9 +17,11 @@ using restaurant.Authorization;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler,PermissionHandler>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 //  Database
+// بيخلي الـ .NET يسيب أسامي الـ Claims زي ما هي في التوكن
+System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

@@ -1,43 +1,53 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using restaurant.Authorization;
 using restaurant.Dtos;
 using restaurant.Services.Interfaces;
 
-[ApiController]
-[Route("api/menu-items")]
-public class MenuItemController : ControllerBase
+namespace restaurant.Controllers
 {
-    private readonly IMenuItemService _menuItemService;
+    [ApiController]
+    [Authorize]
+    [Route("api/MenuItem")]
 
-    public MenuItemController(IMenuItemService menuItemService)
+    public class MenuItemController : BaseApiController
     {
-        _menuItemService = menuItemService;
-    }
+        private readonly IMenuItemService _menuItemService;
 
-    // أي حد يشوف المينيو
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAll(MenuItemSpecParams dto)
-        => Ok(await _menuItemService.GetAllAsync(dto));
+        public MenuItemController(IMenuItemService menuItemService)
+        {
+            _menuItemService = menuItemService;
+        }
 
-    // Admin يضيف صنف
-    [HttpPost]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Create(MenuItemCreateDto dto)
-        => Ok(await _menuItemService.CreateAsync(dto));
+        // أي حد يشوف المينيو
+        [HttpGet]
+        [Permission(Permissions.MenuItemViewAll)]
+        public async Task<IActionResult> GetAll([FromQuery] MenuItemSpecParams dto)
+            => HandleResult(await _menuItemService.GetAllAsync(dto));
 
-    // Admin يعدل
-    [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(int id, MenuItemUpdateDto dto)
-        => Ok(await _menuItemService.UpdateAsync(id, dto));
 
-    // Admin يمسح
-    [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        await _menuItemService.DeleteAsync(id);
-        return NoContent();
+        [HttpGet("{id}")]
+        [Permission(Permissions.MenuItemView)]
+        public async Task<IActionResult> GetById(int id)
+            => HandleResult(await _menuItemService.GetByIdAsync(id));
+
+        // Admin يضيف صنف
+        [HttpPost]
+        [Permission(Permissions.MenuItemCreate)]
+        public async Task<IActionResult> Create(MenuItemCreateDto dto)
+            => HandleResult(await _menuItemService.CreateAsync(dto));
+
+
+        // Admin يعدل
+        [HttpPut("{id}")]
+        [Permission(Permissions.MenuItemUpdate)]
+        public async Task<IActionResult> Update(int id, MenuItemUpdateDto dto)
+            => HandleResult(await _menuItemService.UpdateAsync(id, dto));
+
+        // Admin يمسح
+        [HttpDelete("{id}")]
+        [Permission(Permissions.MenuItemDelete)]
+        public async Task<IActionResult> Delete(int id)
+            => HandleResult(await _menuItemService.DeleteAsync(id));
     }
 }

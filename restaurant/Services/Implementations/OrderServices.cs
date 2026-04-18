@@ -124,12 +124,12 @@ namespace restaurant.Services
 
         public async Task<ServiceResult<IEnumerable<Order>>> GetByMenuItemAsync(int menuItemId)
         {
-            var _menuItemId = await _unitOfWork.Orders.GetByMenuItemAsync(menuItemId);
-            if (_menuItemId == null)
+            var menuItem = await _unitOfWork.Orders.GetByMenuItemAsync(menuItemId);
+            if (menuItem == null)
             {
                 return ServiceResult<IEnumerable<Order>>.Failure("عفوا الطلب غير موجود", 404);
             }
-            return ServiceResult<IEnumerable<Order>>.Success(_menuItemId, "", 200);
+            return ServiceResult<IEnumerable<Order>>.Success(menuItem, "", 200);
 
         }
 
