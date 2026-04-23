@@ -138,7 +138,7 @@ namespace restaurant.Services
         {
 
             var order = await _unitOfWork.Orders.GetByIdAsync(id);
-            if (order == null)
+            if (order ==null)
 
                 return ServiceResult<Order?>.Failure("عفو هذا الاوردر غير موجود", 404);
             // 2. حماية البيزنس: منع التعديل لو الأوردر انتهى فعلياً
