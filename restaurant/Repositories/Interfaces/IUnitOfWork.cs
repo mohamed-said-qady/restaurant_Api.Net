@@ -14,6 +14,7 @@ namespace restaurant.Repositories.Interfaces
         IInventoryRepository Inventory { get; }
         IRolePermissionRepository RolePermissions { get; }
 
+        
         Task<int> CompleteAsync();
 
         Task BeginTransactionAsync();

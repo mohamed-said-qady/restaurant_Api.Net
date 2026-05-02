@@ -5,6 +5,7 @@ using restaurant.Model;
 using restaurant.Services.Interfaces;
 using System.Threading.Tasks;
 using System.Linq;
+using restaurant.Helper;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace restaurant.Services.Implementations
@@ -27,27 +28,34 @@ namespace restaurant.Services.Implementations
         }
 
 
-        public async Task<string> LoginAsync(string username, string password)
+        public async Task<ServiceResult<string>> LoginAsync(string username, string password)
         {
+            // البحث عن المستخدم
             var user = await _userManager.FindByEmailAsync(username);
             if (user == null)
-                return BadRequest("user not found");
+            {
+                return ServiceResult<string>.Failure("اسم المستخدم أو كلمة المرور غير صحيحة", 401);
+            }
 
+            // التأكد من كلمة المرور
             if (!await _userManager.CheckPasswordAsync(user, password))
-                return BadRequest("password error");
+            {
+                return ServiceResult<string>.Failure("اسم المستخدم أو كلمة المرور غير صحيحة", 401);
+            }
 
+            // جلب الأدوار (Roles)
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault();
-            if (role == null) return null;
+            if (role == null)
+            {
+                return ServiceResult<string>.Failure("المستخدم ليس لديه صلاحيات وصول", 403);
+            }
 
+            // جلب الصلاحيات وتوليد التوكن
             var permissions = await _rolePermissionService.GetPermissionsByRoleAsync(role);
+            var token = _jwtService.GenerateToken(user, role, permissions);
 
-            return _jwtService.GenerateToken(user, role, permissions);
-        }
-
-        private string BadRequest(string v)
-        {
-            throw new Exception();
+            return ServiceResult<string>.Success(token, "تم تسجيل الدخول بنجاح");
         }
     }
 }

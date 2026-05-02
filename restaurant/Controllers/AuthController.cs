@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using restaurant.Dtos;
 using restaurant.Services.Interfaces;
@@ -8,7 +9,7 @@ namespace restaurant.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseApiController
     {
         private readonly IAuthService _authService;
 
@@ -17,13 +18,21 @@ namespace restaurant.Controllers
             _authService = authService;
         }
 
+        //[HttpPost("login")]
+        //public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        //{
+        //    var token = await _authService.LoginAsync(dto.Username, dto.Password);
+        //    if (token == null)
+        //        return Unauthorized("اسم المستخدم أو كلمة المرور غير صحيحة");
+        //    return Ok(token);
+        //}
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var token = await _authService.LoginAsync(dto.Username, dto.Password);
-            if (token == null) return Unauthorized("اسم المستخدم أو كلمة المرور غير صحيحة");
+            // بتبعت الـ Username والـ Password وبترجع النتيجة للـ HandleResult
+            var result = await _authService.LoginAsync(dto.Username, dto.Password);
 
-            return Ok(token);
+            return HandleResult(result);
         }
     }
 }

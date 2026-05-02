@@ -192,6 +192,7 @@ namespace restaurant.Services
                     }
                 }
                 Order.IsDeleted = true;
+                await _unitOfWork.CompleteAsync();
                 await _unitOfWork.CommitTransactionAsync();
                 // await _unitOfWork.CompleteAsync();
                 return ServiceResult<bool>.Success(true, "تم المسح بنجاح", 200);

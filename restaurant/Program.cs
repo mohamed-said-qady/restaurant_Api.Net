@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using restaurant.Authorization;
 using restaurant.Data;
 using restaurant.Data.Seeder;
 using restaurant.Middleware;
@@ -12,19 +14,25 @@ using restaurant.Repositories.Interfaces;
 using restaurant.Services;
 using restaurant.Services.Implementations;
 using restaurant.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using restaurant.Authorization;
+using System.Data.Common;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IAuthorizationHandler,PermissionHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 //  Database
 // بيخلي الـ .NET يسيب أسامي الـ Claims زي ما هي في التوكن
 System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// 1. بنعرف الـ Connection String الأول
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// 2. بنحط شرط: لو إحنا "مش" في بيئة التست، سجل SQL Server
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(connectionString));
+}
 
 //  Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
@@ -87,8 +95,7 @@ builder.Services.AddScoped<PermissionSeeder>();
 //builder.Services.AddScoped<PermissionSeeder>();
 
 builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<UserSeeder>();
-builder.Services.AddScoped<PermissionSeeder>();
+
 //builder.Services.AddScoped<RolePermissionSeeder>();
 
 
@@ -165,3 +172,4 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
+public partial class Program { } // دي بتخلي مشروع التست يقدر يوصل للـ Program class

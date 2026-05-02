@@ -39,7 +39,6 @@ namespace restaurant.Services.Implementations
 
             //  إنشاء المفتاح
 
-            Console.WriteLine($"Secret Key: {secretKey}"); // للتأكد من قراءة المفتاح بشكل صحيح
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

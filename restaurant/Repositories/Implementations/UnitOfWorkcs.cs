@@ -1,16 +1,21 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Storage;
 using restaurant.Data;
+using restaurant.Model;
 using restaurant.Repositories.Interfaces;
+using restaurant.Services.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace restaurant.Repositories.Implementations
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
-        private IDbContextTransaction? _transaction; 
-
+        private IDbContextTransaction? _transaction;
+        //private readonly UserManager<ApplicationUser> _userManager;
+        //private readonly IJwtService _jwtService;
+        //private readonly IRolePermissionService _rolePermissionService;
         public IOrderRepository Orders { get; private set; }
         public IMenuItemRepository MenuItems { get; private set; }
         public IInventoryRepository Inventory { get; private set; }

@@ -7,8 +7,7 @@ using System.Reflection.Emit;
 
 namespace restaurant.Data
 {
-    public class AppDbContext
-        : IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>
+    public class AppDbContext: IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
@@ -20,7 +19,17 @@ namespace restaurant.Data
         public DbSet<MenuItem> MenuItems => Set<MenuItem>();
         public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
 
-
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // السطر ده هو "صمام الأمان"
+            // لو الـ Options اللي جاية من بره (سواء Program.cs أو Test Factory) 
+            // حددت خلاص Provider معين، متخليهوش يحاول يضيف SQL Server فوقيه
+            if (!optionsBuilder.IsConfigured)
+            {
+                // سيب الميثود فاضية هنا لأننا بنسجل في الـ Program.cs
+                // أو لو حابب تضمن إنه ميعملش Conflict، خلي التسجيل دايما من بره
+            }
+        }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

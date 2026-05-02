@@ -23,7 +23,6 @@ namespace Restaurant.UnitTests.Services
         {
             // 2. بنكريت الـ Mock يدويًا
             _unitOfWorkMock = new Mock<IUnitOfWork>();
-
             // 3. بنعمل Instance من السيرفس الحقيقية ونبعتلها الـ Mock Object
             _orderService = new OrderService(_unitOfWorkMock.Object);
         }
@@ -130,4 +129,26 @@ namespace Restaurant.UnitTests.Services
             Assert.Equal("تم تعديل الاوردر بنجاح", result.Message);
 
         }
-    } }
+        [Fact]
+        public async Task UpdateOrder_OrderStatusIsCanceledReturnFailure()
+        {
+            var OrderDataDto = new OrderUpdateDto()
+            {
+                Status = OrderStatus.Cancelled
+            };
+            var OrderData = new Order()
+            {
+                Status = OrderStatus.Cancelled
+            };
+            _unitOfWorkMock.Setup(u => u.Orders.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((OrderData));
+            var result = await _orderService.UpdateAsync(1, OrderDataDto);
+            Assert.Equal("لا يمكن تعديل طلب تم توصيله أو إلغاؤه", result.Message);
+
+        }
+
+
+    }
+}
+
+
+

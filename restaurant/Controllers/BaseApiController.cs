@@ -10,6 +10,11 @@ namespace restaurant.Controllers
         // ميثود بتاخد باراميتر واحد وبترجعه زي ما هو بالـ Code بتاعه
         protected IActionResult HandleResult<T>(ServiceResult<T> result)
         {
+            // لو السيرفيس ضربت أو رجعت نل لأي سبب
+            if (result == null)
+            {
+                return StatusCode(500, "Internal Server Error: Service returned null");
+            }
 
             return StatusCode(result.StatusCode, result);
         }
